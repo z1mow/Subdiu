@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { CalendarClock, CreditCard, Wallet } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
+import { FadeIn } from "@/components/motion/fade-in"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { CategoryChart } from "@/components/dashboard/category-chart"
 import { UpcomingPayments } from "@/components/dashboard/upcoming-payments"
@@ -88,7 +89,7 @@ export default async function DashboardPage() {
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FadeIn className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
               label="Aylık Harcama"
               value={formatCurrency(primary?.monthly ?? 0, primaryCurrency)}
@@ -110,15 +111,13 @@ export default async function DashboardPage() {
               hint={`${subscriptions.length} toplam kayıt`}
               icon={CalendarClock}
             />
-          </div>
+          </FadeIn>
 
-          <div className="grid gap-4 lg:grid-cols-5">
+          <FadeIn delay={0.06} className="grid gap-4 lg:grid-cols-5">
             <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>Kategori dağılımı</CardTitle>
-                <CardDescription>
-                  Aylık bazda · {primaryCurrency}
-                </CardDescription>
+                <CardDescription>Aylık bazda · {primaryCurrency}</CardDescription>
               </CardHeader>
               <CardContent>
                 <CategoryChart data={breakdown} currency={primaryCurrency} />
@@ -134,7 +133,7 @@ export default async function DashboardPage() {
                 <UpcomingPayments items={upcoming} />
               </CardContent>
             </Card>
-          </div>
+          </FadeIn>
         </>
       )}
     </div>

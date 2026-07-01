@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { AddSubscriptionButton } from "@/components/subscriptions/add-subscription-button"
-import { SubscriptionsList } from "@/components/subscriptions/subscriptions-list"
+import { SubscriptionsBrowser } from "@/components/subscriptions/subscriptions-browser"
 import { createClient } from "@/lib/supabase/server"
 import type { SubscriptionView } from "@/types"
 
@@ -42,7 +42,7 @@ export default async function SubscriptionsPage() {
         <AddSubscriptionButton defaultCurrency={defaultCurrency} />
       </PageHeader>
 
-      <SubscriptionsList
+      <SubscriptionsBrowser
         subscriptions={subscriptions}
         defaultCurrency={defaultCurrency}
       />
