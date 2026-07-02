@@ -7,6 +7,9 @@ import {
   subscriptionActionSchema,
   type SubscriptionActionInput,
 } from "@/lib/validations/subscription"
+import type { SubscriptionStatus } from "@/types"
+
+const STATUSES: SubscriptionStatus[] = ["active", "paused", "cancelled"]
 
 export type ActionResult =
   | { success: true }
@@ -87,6 +90,32 @@ export async function deleteSubscription(id: string): Promise<ActionResult> {
   if (!user) return { success: false, error: "Oturum bulunamadı." }
 
   const { error } = await supabase.from("subscriptions").delete().eq("id", id)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidateAll()
+  return { success: true }
+}
+
+/** Abonelik durumunu değiştirir (aktif / duraklat / iptal). RLS ile korunur. */
+export async function setSubscriptionStatus(
+  id: string,
+  status: SubscriptionStatus
+): Promise<ActionResult> {
+  if (!STATUSES.includes(status)) {
+    return { success: false, error: "Geçersiz durum." }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: "Oturum bulunamadı." }
+
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({ status })
+    .eq("id", id)
 
   if (error) return { success: false, error: error.message }
 

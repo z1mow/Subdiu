@@ -6,8 +6,11 @@ import {
   ExternalLink,
   Loader2,
   MoreVertical,
+  PauseCircle,
   Pencil,
+  PlayCircle,
   Trash2,
+  XCircle,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -39,18 +42,27 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ServiceLogo } from "@/components/subscriptions/service-logo"
 import { SubscriptionForm } from "@/components/subscriptions/subscription-form"
-import { deleteSubscription } from "@/lib/actions/subscriptions"
+import {
+  deleteSubscription,
+  setSubscriptionStatus,
+} from "@/lib/actions/subscriptions"
 import { CYCLE_SUFFIX } from "@/lib/constants"
 import { formatCurrency, formatDate } from "@/lib/format"
 import { relativeDays, urgencyOf, type Urgency } from "@/lib/subscriptions"
 import { cn } from "@/lib/utils"
-import type { SubscriptionView } from "@/types"
+import type { SubscriptionStatus, SubscriptionView } from "@/types"
 
 const URGENCY_CLASS: Record<Urgency, string> = {
   overdue: "text-destructive",
   soon: "text-destructive",
   upcoming: "text-amber-600 dark:text-amber-500",
   later: "text-muted-foreground",
+}
+
+const STATUS_LABEL: Record<SubscriptionStatus, string> = {
+  active: "Aktif",
+  paused: "Duraklatıldı",
+  cancelled: "İptal edildi",
 }
 
 type Props = {
@@ -64,6 +76,7 @@ export function SubscriptionCard({ subscription, defaultCurrency }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  const isActive = subscription.status === "active"
   const urgency = urgencyOf(subscription.next_billing_date)
 
   async function handleDelete() {
@@ -80,8 +93,29 @@ export function SubscriptionCard({ subscription, defaultCurrency }: Props) {
     router.refresh()
   }
 
+  async function handleStatus(status: SubscriptionStatus) {
+    const result = await setSubscriptionStatus(subscription.id, status)
+    if (!result.success) {
+      toast.error("Durum değiştirilemedi", { description: result.error })
+      return
+    }
+    toast.success(
+      status === "active"
+        ? "Abonelik etkinleştirildi"
+        : status === "paused"
+          ? "Abonelik duraklatıldı"
+          : "Abonelik iptal edildi"
+    )
+    router.refresh()
+  }
+
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/40">
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/40",
+        !isActive && "opacity-60"
+      )}
+    >
       <ServiceLogo name={subscription.name} color={subscription.color} />
 
       <div className="min-w-0 flex-1">
@@ -91,10 +125,16 @@ export function SubscriptionCard({ subscription, defaultCurrency }: Props) {
             {subscription.category}
           </Badge>
         </div>
-        <p className={cn("text-xs", URGENCY_CLASS[urgency])}>
-          {formatDate(subscription.next_billing_date)} ·{" "}
-          {relativeDays(subscription.next_billing_date)}
-        </p>
+        {isActive ? (
+          <p className={cn("text-xs", URGENCY_CLASS[urgency])}>
+            {formatDate(subscription.next_billing_date)} ·{" "}
+            {relativeDays(subscription.next_billing_date)}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {STATUS_LABEL[subscription.status]}
+          </p>
+        )}
       </div>
 
       <div className="text-right">
@@ -138,7 +178,32 @@ export function SubscriptionCard({ subscription, defaultCurrency }: Props) {
               İptal sayfası
             </DropdownMenuItem>
           ) : null}
+
           <DropdownMenuSeparator />
+
+          {!isActive && (
+            <DropdownMenuItem onClick={() => handleStatus("active")}>
+              <PlayCircle className="size-4" />
+              {subscription.status === "paused"
+                ? "Devam ettir"
+                : "Yeniden etkinleştir"}
+            </DropdownMenuItem>
+          )}
+          {isActive && (
+            <DropdownMenuItem onClick={() => handleStatus("paused")}>
+              <PauseCircle className="size-4" />
+              Duraklat
+            </DropdownMenuItem>
+          )}
+          {subscription.status !== "cancelled" && (
+            <DropdownMenuItem onClick={() => handleStatus("cancelled")}>
+              <XCircle className="size-4" />
+              İptal et
+            </DropdownMenuItem>
+          )}
+
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem
             onClick={() => setDeleteOpen(true)}
             className="text-destructive focus:text-destructive"
