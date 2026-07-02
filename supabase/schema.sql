@@ -42,7 +42,6 @@ create table if not exists public.profiles (
   avatar_url       text,
   default_currency text not null default 'TRY',
   theme            text not null default 'system' check (theme in ('light', 'dark', 'system')),
-  monthly_budget   numeric(12, 2),
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
