@@ -37,6 +37,23 @@ export const CATEGORIES: string[] = [
   "Diğer",
 ]
 
+export const INCOME_CATEGORIES: string[] = [
+  "Maaş",
+  "Ek Gelir",
+  "Yatırım",
+  "Diğer",
+]
+
+export const EXPENSE_CATEGORIES: string[] = [
+  "Kira",
+  "Faturalar",
+  "Market",
+  "Ulaşım",
+  "Sağlık",
+  "Eğlence",
+  "Diğer",
+]
+
 /** Grafik ve rozetler için kategori renkleri. */
 export const CATEGORY_COLORS: Record<string, string> = {
   Eğlence: "#e11d48",
