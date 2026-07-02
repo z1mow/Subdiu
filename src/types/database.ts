@@ -228,6 +228,10 @@ export type Database = {
         }
         Returns: string
       }
+      generate_due_transactions: {
+        Args: Record<string, never>
+        Returns: number
+      }
       generate_due_transactions_for_current_user: {
         Args: Record<string, never>
         Returns: number
