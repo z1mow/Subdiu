@@ -22,6 +22,7 @@ export type Database = {
           avatar_url: string | null
           default_currency: string
           theme: string
+          monthly_budget: number | null
           created_at: string
           updated_at: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           avatar_url?: string | null
           default_currency?: string
           theme?: string
+          monthly_budget?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -42,6 +44,7 @@ export type Database = {
           avatar_url?: string | null
           default_currency?: string
           theme?: string
+          monthly_budget?: number | null
           created_at?: string
           updated_at?: string
         }

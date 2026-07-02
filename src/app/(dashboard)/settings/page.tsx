@@ -18,7 +18,7 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("default_currency")
+    .select("default_currency, monthly_budget")
     .eq("id", user.id)
     .single()
 
@@ -28,7 +28,10 @@ export default async function SettingsPage() {
         title="Ayarlar"
         description="Varsayılan para birimi ve tema tercihlerini yönet."
       />
-      <SettingsForm defaultCurrency={profile?.default_currency ?? "TRY"} />
+      <SettingsForm
+        defaultCurrency={profile?.default_currency ?? "TRY"}
+        defaultBudget={profile?.monthly_budget ?? null}
+      />
     </div>
   )
 }

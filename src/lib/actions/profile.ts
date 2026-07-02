@@ -12,6 +12,7 @@ export type ActionResult =
 const profileSchema = z.object({
   default_currency: z.string().min(1).max(8),
   theme: z.enum(["light", "dark", "system"]),
+  monthly_budget: z.number().min(0).max(10_000_000).nullable().optional(),
 })
 
 export type ProfileInput = z.infer<typeof profileSchema>

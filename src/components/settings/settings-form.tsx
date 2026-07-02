@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -32,21 +33,36 @@ const THEMES = [
   { value: "system", label: "Sistem" },
 ]
 
-export function SettingsForm({ defaultCurrency }: { defaultCurrency: string }) {
+type Props = {
+  defaultCurrency: string
+  defaultBudget: number | null
+}
+
+export function SettingsForm({ defaultCurrency, defaultBudget }: Props) {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
   const [currency, setCurrency] = useState(defaultCurrency)
+  const [budget, setBudget] = useState(
+    defaultBudget !== null ? String(defaultBudget) : ""
+  )
   const [saving, setSaving] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
 
   async function handleSave() {
+    const trimmedBudget = budget.trim()
+    if (trimmedBudget !== "" && (Number.isNaN(Number(trimmedBudget)) || Number(trimmedBudget) < 0)) {
+      toast.error("Geçerli bir bütçe tutarı gir.")
+      return
+    }
+
     setSaving(true)
     const nextTheme = (theme as "light" | "dark" | "system") ?? "system"
     const result = await updateProfile({
       default_currency: currency,
       theme: nextTheme,
+      monthly_budget: trimmedBudget === "" ? null : Number(trimmedBudget),
     })
     setSaving(false)
 
@@ -106,6 +122,24 @@ export function SettingsForm({ defaultCurrency }: { defaultCurrency: string }) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="budget">Aylık bütçe limiti (opsiyonel)</Label>
+          <Input
+            id="budget"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="0.01"
+            placeholder="Ör. 1500"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            className="max-w-48"
+          />
+          <p className="text-xs text-muted-foreground">
+            Dashboard&apos;da bu tutarı aştığında uyarı gösterilir.
+          </p>
         </div>
       </CardContent>
 

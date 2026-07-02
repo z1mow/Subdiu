@@ -1,11 +1,13 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
-import { CalendarClock, CreditCard, Wallet } from "lucide-react"
+import { CalendarClock, Wallet } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { FadeIn } from "@/components/motion/fade-in"
 import { StatCard } from "@/components/dashboard/stat-card"
+import { BudgetCard } from "@/components/dashboard/budget-card"
 import { CategoryChart } from "@/components/dashboard/category-chart"
+import { TotalToggleCard } from "@/components/dashboard/total-toggle-card"
 import { TrendChart } from "@/components/dashboard/trend-chart"
 import { UpcomingPayments } from "@/components/dashboard/upcoming-payments"
 import { AddSubscriptionButton } from "@/components/subscriptions/add-subscription-button"
@@ -18,7 +20,6 @@ import {
 } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
 import { getExchangeRates } from "@/lib/exchange"
-import { formatCurrency } from "@/lib/format"
 import {
   categorySpending,
   convertedTotals,
@@ -45,13 +46,14 @@ export default async function DashboardPage() {
       .order("next_billing_date", { ascending: true }),
     supabase
       .from("profiles")
-      .select("default_currency")
+      .select("default_currency, monthly_budget")
       .eq("id", user.id)
       .single(),
   ])
 
   const subscriptions: SubscriptionView[] = subsRes.data ?? []
   const defaultCurrency = profileRes.data?.default_currency ?? "TRY"
+  const monthlyBudget = profileRes.data?.monthly_budget ?? null
 
   const activeSubs = subscriptions.filter((s) => s.status === "active")
   // Farklı para birimi varsa kurları çek; hepsi varsayılan birimdeyse gerek yok.
@@ -99,23 +101,22 @@ export default async function DashboardPage() {
       ) : (
         <>
           <FadeIn className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <StatCard
-              label="Aylık Harcama"
-              value={formatCurrency(totals.monthly, defaultCurrency)}
+            <TotalToggleCard
+              monthly={totals.monthly}
+              yearly={totals.yearly}
+              currency={defaultCurrency}
               hint={convHint}
-              icon={Wallet}
-            />
-            <StatCard
-              label="Yıllık Harcama"
-              value={formatCurrency(totals.yearly, defaultCurrency)}
-              hint={convHint}
-              icon={CreditCard}
             />
             <StatCard
               label="Aktif Abonelik"
               value={String(activeSubs.length)}
               hint={`${subscriptions.length} toplam kayıt`}
               icon={CalendarClock}
+            />
+            <BudgetCard
+              spent={totals.monthly}
+              limit={monthlyBudget}
+              currency={defaultCurrency}
             />
           </FadeIn>
 
