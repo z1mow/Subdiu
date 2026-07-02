@@ -1,4 +1,5 @@
 import { CATEGORY_COLORS, colorFromString } from "@/lib/constants"
+import type { Rates } from "@/lib/exchange"
 import type { SubscriptionView } from "@/types"
 
 /** Date nesnesini `yyyy-mm-dd` (yerel) biçimine çevirir. */
@@ -38,43 +39,64 @@ export function relativeDays(date: string | Date): string {
   return `${d} gün sonra`
 }
 
-export type CurrencySpending = {
-  currency: string
+/** Bir tutarı, kur tablosunu kullanarak temel para birimine çevirir. Kur yoksa null. */
+export function convertToBase(
+  amount: number,
+  currency: string,
+  rates: Rates | null
+): number | null {
+  if (!rates) return null
+  const rate = rates[currency]
+  if (!rate) return null
+  return amount / rate
+}
+
+export type SpendingTotals = {
   monthly: number
   yearly: number
-  count: number
+  /** Tüm aktif abonelikler çevrilebildi mi (false → bazı kurlar eksik). */
+  complete: boolean
 }
 
-/** Aktif abonelikleri para birimine göre gruplayıp aylık/yıllık toplamları çıkarır. */
-export function groupSpendingByCurrency(
-  subs: SubscriptionView[]
-): CurrencySpending[] {
-  const map = new Map<string, CurrencySpending>()
+/** Aktif aboneliklerin aylık/yıllık toplamını temel para biriminde döndürür. */
+export function convertedTotals(
+  subs: SubscriptionView[],
+  rates: Rates | null
+): SpendingTotals {
+  let monthly = 0
+  let yearly = 0
+  let complete = true
+
   for (const s of subs) {
     if (s.status !== "active") continue
-    const cur = map.get(s.currency) ?? {
-      currency: s.currency,
-      monthly: 0,
-      yearly: 0,
-      count: 0,
+    const m = convertToBase(s.monthly_price, s.currency, rates)
+    const y = convertToBase(s.yearly_price, s.currency, rates)
+    if (m === null || y === null) {
+      complete = false
+      continue
     }
-    cur.monthly += s.monthly_price
-    cur.yearly += s.yearly_price
-    cur.count += 1
-    map.set(s.currency, cur)
+    monthly += m
+    yearly += y
   }
-  return [...map.values()].sort((a, b) => b.monthly - a.monthly)
+
+  return {
+    monthly: Math.round(monthly * 100) / 100,
+    yearly: Math.round(yearly * 100) / 100,
+    complete,
+  }
 }
 
-/** Verilen para biriminde, kategoriye göre aylık harcama dağılımı (grafik için). */
-export function categoryBreakdown(
+/** Kategoriye göre aylık harcama dağılımı — hepsi temel para birimine çevrilir (grafik için). */
+export function categorySpending(
   subs: SubscriptionView[],
-  currency: string
+  rates: Rates | null
 ): { category: string; value: number; color: string }[] {
   const map = new Map<string, number>()
   for (const s of subs) {
-    if (s.status !== "active" || s.currency !== currency) continue
-    map.set(s.category, (map.get(s.category) ?? 0) + s.monthly_price)
+    if (s.status !== "active") continue
+    const m = convertToBase(s.monthly_price, s.currency, rates)
+    if (m === null) continue
+    map.set(s.category, (map.get(s.category) ?? 0) + m)
   }
   return [...map.entries()]
     .map(([category, value]) => ({

@@ -16,10 +16,11 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
+import { getExchangeRates } from "@/lib/exchange"
 import { formatCurrency } from "@/lib/format"
 import {
-  categoryBreakdown,
-  groupSpendingByCurrency,
+  categorySpending,
+  convertedTotals,
   upcomingPayments,
 } from "@/lib/subscriptions"
 import type { SubscriptionView } from "@/types"
@@ -50,17 +51,22 @@ export default async function DashboardPage() {
   const subscriptions: SubscriptionView[] = subsRes.data ?? []
   const defaultCurrency = profileRes.data?.default_currency ?? "TRY"
 
-  const spending = groupSpendingByCurrency(subscriptions)
-  const primary =
-    spending.find((s) => s.currency === defaultCurrency) ?? spending[0]
-  const primaryCurrency = primary?.currency ?? defaultCurrency
-  const otherCurrencies = spending
-    .filter((s) => s.currency !== primaryCurrency)
-    .map((s) => s.currency)
+  const activeSubs = subscriptions.filter((s) => s.status === "active")
+  // Farklı para birimi varsa kurları çek; hepsi varsayılan birimdeyse gerek yok.
+  const needRates = activeSubs.some((s) => s.currency !== defaultCurrency)
+  const rates = needRates
+    ? ((await getExchangeRates(defaultCurrency)) ?? { [defaultCurrency]: 1 })
+    : { [defaultCurrency]: 1 }
 
-  const activeCount = subscriptions.filter((s) => s.status === "active").length
-  const breakdown = categoryBreakdown(subscriptions, primaryCurrency)
+  const totals = convertedTotals(subscriptions, rates)
+  const breakdown = categorySpending(subscriptions, rates)
   const upcoming = upcomingPayments(subscriptions, 5)
+
+  const convHint = needRates
+    ? totals.complete
+      ? "≈ güncel kurlarla"
+      : "≈ bazı kurlar alınamadı"
+    : undefined
 
   return (
     <div className="space-y-6">
@@ -92,22 +98,19 @@ export default async function DashboardPage() {
           <FadeIn className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
               label="Aylık Harcama"
-              value={formatCurrency(primary?.monthly ?? 0, primaryCurrency)}
-              hint={
-                otherCurrencies.length
-                  ? `Ayrıca: ${otherCurrencies.join(", ")}`
-                  : undefined
-              }
+              value={formatCurrency(totals.monthly, defaultCurrency)}
+              hint={convHint}
               icon={Wallet}
             />
             <StatCard
               label="Yıllık Harcama"
-              value={formatCurrency(primary?.yearly ?? 0, primaryCurrency)}
+              value={formatCurrency(totals.yearly, defaultCurrency)}
+              hint={convHint}
               icon={CreditCard}
             />
             <StatCard
               label="Aktif Abonelik"
-              value={String(activeCount)}
+              value={String(activeSubs.length)}
               hint={`${subscriptions.length} toplam kayıt`}
               icon={CalendarClock}
             />
@@ -117,10 +120,10 @@ export default async function DashboardPage() {
             <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>Kategori dağılımı</CardTitle>
-                <CardDescription>Aylık bazda · {primaryCurrency}</CardDescription>
+                <CardDescription>Aylık bazda · {defaultCurrency}</CardDescription>
               </CardHeader>
               <CardContent>
-                <CategoryChart data={breakdown} currency={primaryCurrency} />
+                <CategoryChart data={breakdown} currency={defaultCurrency} />
               </CardContent>
             </Card>
 
