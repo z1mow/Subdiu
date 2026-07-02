@@ -40,7 +40,7 @@ create table if not exists public.profiles (
   email            text,
   full_name        text,
   avatar_url       text,
-  default_currency text not null default 'USD',
+  default_currency text not null default 'TRY',
   theme            text not null default 'system' check (theme in ('light', 'dark', 'system')),
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()

@@ -37,8 +37,6 @@ export const CATEGORIES: string[] = [
   "Diğer",
 ]
 
-export const CATEGORY_ITEMS = CATEGORIES.map((c) => ({ value: c, label: c }))
-
 /** Grafik ve rozetler için kategori renkleri. */
 export const CATEGORY_COLORS: Record<string, string> = {
   Eğlence: "#e11d48",
