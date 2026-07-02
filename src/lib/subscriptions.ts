@@ -107,6 +107,51 @@ export function categorySpending(
     .sort((a, b) => b.value - a.value)
 }
 
+export type TrendPoint = { key: string; label: string; total: number }
+
+/** Bir tarihi `yıl*12+ay` tam sayısına indirger (ay bazlı karşılaştırma için). */
+function monthIndexOf(date: string): number {
+  const d = new Date(date)
+  return d.getFullYear() * 12 + d.getMonth()
+}
+
+/**
+ * Son `months` ay için toplam aylık harcama trendi (temel para biriminde).
+ * Geçmiş durum değişikliği loglanmadığından yaklaşık hesaplanır: aktif abonelikler
+ * first_billing_date'ten itibaren her ay sayılır; duraklatılan/iptal edilenler
+ * `updated_at` ayına kadar sayılır (durum değişikliğinin o an olduğu varsayılır).
+ */
+export function spendingTrend(
+  subs: SubscriptionView[],
+  rates: Rates | null,
+  months = 6
+): TrendPoint[] {
+  const now = new Date()
+  const points: TrendPoint[] = []
+
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const monthIndex = d.getFullYear() * 12 + d.getMonth()
+    let total = 0
+
+    for (const s of subs) {
+      if (monthIndexOf(s.first_billing_date) > monthIndex) continue
+      if (s.status !== "active" && monthIndexOf(s.updated_at) < monthIndex) continue
+
+      const amount = convertToBase(s.monthly_price, s.currency, rates)
+      if (amount !== null) total += amount
+    }
+
+    points.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      label: new Intl.DateTimeFormat("tr-TR", { month: "short" }).format(d),
+      total: Math.round(total * 100) / 100,
+    })
+  }
+
+  return points
+}
+
 /** Aktif abonelikleri sonraki ödeme tarihine göre sıralayıp ilk n tanesini döndürür. */
 export function upcomingPayments(
   subs: SubscriptionView[],

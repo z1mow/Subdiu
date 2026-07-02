@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { FadeIn } from "@/components/motion/fade-in"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { CategoryChart } from "@/components/dashboard/category-chart"
+import { TrendChart } from "@/components/dashboard/trend-chart"
 import { UpcomingPayments } from "@/components/dashboard/upcoming-payments"
 import { AddSubscriptionButton } from "@/components/subscriptions/add-subscription-button"
 import {
@@ -21,6 +22,7 @@ import { formatCurrency } from "@/lib/format"
 import {
   categorySpending,
   convertedTotals,
+  spendingTrend,
   upcomingPayments,
 } from "@/lib/subscriptions"
 import type { SubscriptionView } from "@/types"
@@ -61,6 +63,7 @@ export default async function DashboardPage() {
   const totals = convertedTotals(subscriptions, rates)
   const breakdown = categorySpending(subscriptions, rates)
   const upcoming = upcomingPayments(subscriptions, 5)
+  const trend = spendingTrend(subscriptions, rates, 6)
 
   const convHint = needRates
     ? totals.complete
@@ -134,6 +137,18 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <UpcomingPayments items={upcoming} />
+              </CardContent>
+            </Card>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Harcama trendi</CardTitle>
+                <CardDescription>Son 6 ay · {defaultCurrency}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TrendChart data={trend} currency={defaultCurrency} />
               </CardContent>
             </Card>
           </FadeIn>
