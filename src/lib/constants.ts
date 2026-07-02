@@ -53,27 +53,37 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Diğer: "#94a3b8",
 }
 
-/** Hızlı ekleme için hazır popüler servisler (isim + marka rengi + kategori). */
+/** Hızlı ekleme için hazır popüler servisler (isim + marka rengi + kategori + simple-icons slug). */
 export const POPULAR_SERVICES: {
   name: string
   color: string
   category: string
+  slug: string
 }[] = [
-  { name: "Netflix", color: "#E50914", category: "Eğlence" },
-  { name: "Spotify", color: "#1DB954", category: "Müzik" },
-  { name: "YouTube Premium", color: "#FF0000", category: "Eğlence" },
-  { name: "Disney+", color: "#113CCF", category: "Eğlence" },
-  { name: "Amazon Prime", color: "#00A8E1", category: "Eğlence" },
-  { name: "Apple Music", color: "#FA243C", category: "Müzik" },
-  { name: "iCloud+", color: "#3693F3", category: "Depolama" },
-  { name: "Google One", color: "#4285F4", category: "Depolama" },
-  { name: "ChatGPT Plus", color: "#10A37F", category: "Yazılım" },
-  { name: "Adobe CC", color: "#FF0000", category: "Yazılım" },
-  { name: "GitHub", color: "#181717", category: "Yazılım" },
-  { name: "Notion", color: "#0F0F0F", category: "Yazılım" },
-  { name: "Xbox Game Pass", color: "#107C10", category: "Oyun" },
-  { name: "PS Plus", color: "#0070D1", category: "Oyun" },
+  { name: "Netflix", color: "#E50914", category: "Eğlence", slug: "netflix" },
+  { name: "Spotify", color: "#1DB954", category: "Müzik", slug: "spotify" },
+  { name: "YouTube Premium", color: "#FF0000", category: "Eğlence", slug: "youtube" },
+  { name: "Disney+", color: "#113CCF", category: "Eğlence", slug: "" },
+  { name: "Amazon Prime", color: "#00A8E1", category: "Eğlence", slug: "" },
+  { name: "Apple Music", color: "#FA243C", category: "Müzik", slug: "applemusic" },
+  { name: "iCloud+", color: "#3693F3", category: "Depolama", slug: "icloud" },
+  { name: "Google One", color: "#4285F4", category: "Depolama", slug: "google" },
+  { name: "ChatGPT Plus", color: "#10A37F", category: "Yazılım", slug: "" },
+  { name: "Adobe CC", color: "#FF0000", category: "Yazılım", slug: "" },
+  { name: "GitHub", color: "#181717", category: "Yazılım", slug: "github" },
+  { name: "Notion", color: "#0F0F0F", category: "Yazılım", slug: "notion" },
+  { name: "Xbox Game Pass", color: "#107C10", category: "Oyun", slug: "" },
+  { name: "PS Plus", color: "#0070D1", category: "Oyun", slug: "playstation" },
 ]
+
+/** Abonelik adından bilinen bir simple-icons slug'ı bulur (yoksa null). */
+export function iconSlugFor(name: string): string | null {
+  const normalized = name.trim().toLocaleLowerCase("tr")
+  const match = POPULAR_SERVICES.find(
+    (s) => s.name.toLocaleLowerCase("tr") === normalized
+  )
+  return match?.slug || null
+}
 
 /** Bir metinden deterministik, canlı bir renk üretir (bilinmeyen servisler için). */
 export function colorFromString(input: string): string {
