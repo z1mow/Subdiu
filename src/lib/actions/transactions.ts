@@ -48,33 +48,6 @@ export async function createTransaction(
   return { success: true }
 }
 
-/** Tek seferlik gelir/gider kaydını günceller. */
-export async function updateTransaction(
-  id: string,
-  input: TransactionActionInput
-): Promise<ActionResult> {
-  const parsed = transactionActionSchema.safeParse(input)
-  if (!parsed.success) {
-    return { success: false, error: "Form bilgileri geçersiz." }
-  }
-
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: "Oturum bulunamadı." }
-
-  const { error } = await supabase
-    .from("transactions")
-    .update({ ...parsed.data, notes: parsed.data.notes || null })
-    .eq("id", id)
-
-  if (error) return { success: false, error: error.message }
-
-  revalidateAll()
-  return { success: true }
-}
-
 /** Tek seferlik gelir/gider kaydını siler. */
 export async function deleteTransaction(id: string): Promise<ActionResult> {
   const supabase = await createClient()
