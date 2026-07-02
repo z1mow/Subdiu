@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { AddSubscriptionButton } from "@/components/subscriptions/add-subscription-button"
+import { ExportButton } from "@/components/subscriptions/export-button"
+import { ImportButton } from "@/components/subscriptions/import-button"
 import { SubscriptionsBrowser } from "@/components/subscriptions/subscriptions-browser"
 import { createClient } from "@/lib/supabase/server"
 import type { SubscriptionView } from "@/types"
@@ -39,6 +41,8 @@ export default async function SubscriptionsPage() {
         title="Abonelikler"
         description={`${subscriptions.length} abonelik`}
       >
+        <ImportButton />
+        <ExportButton subscriptions={subscriptions} />
         <AddSubscriptionButton defaultCurrency={defaultCurrency} />
       </PageHeader>
 
