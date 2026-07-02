@@ -101,6 +101,99 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_rules: {
+        Row: {
+          id: string
+          user_id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          name: string
+          amount: number
+          currency: string
+          category: string
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
+          start_date: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          name: string
+          amount: number
+          currency?: string
+          category?: string
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          start_date: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          name?: string
+          amount?: number
+          currency?: string
+          category?: string
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          id: string
+          user_id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          amount: number
+          currency: string
+          category: string
+          occurred_on: string
+          notes: string | null
+          subscription_id: string | null
+          recurring_rule_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          amount: number
+          currency?: string
+          category?: string
+          occurred_on: string
+          notes?: string | null
+          subscription_id?: string | null
+          recurring_rule_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          amount?: number
+          currency?: string
+          category?: string
+          occurred_on?: string
+          notes?: string | null
+          subscription_id?: string | null
+          recurring_rule_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       subscriptions_view: {
@@ -135,10 +228,15 @@ export type Database = {
         }
         Returns: string
       }
+      generate_due_transactions_for_current_user: {
+        Args: Record<string, never>
+        Returns: number
+      }
     }
     Enums: {
       billing_cycle: "weekly" | "monthly" | "quarterly" | "yearly"
       subscription_status: "active" | "paused" | "cancelled"
+      transaction_type: "income" | "expense"
     }
     CompositeTypes: Record<string, never>
   }
