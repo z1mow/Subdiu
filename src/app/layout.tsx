@@ -1,6 +1,7 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
+import { ServiceWorkerRegister } from "@/components/providers/sw-register"
 import { ThemeProvider } from "@/components/providers/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
@@ -22,6 +23,15 @@ export const metadata: Metadata = {
   },
   description:
     "Aboneliklerini ekle, aylık ve yıllık harcamanı tek bakışta gör. Yaklaşan ödemeleri asla kaçırma.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Subdiu",
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#171717",
 }
 
 export default function RootLayout({
@@ -44,6 +54,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster richColors position="top-center" />
+          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>
